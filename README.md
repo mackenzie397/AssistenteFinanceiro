@@ -1,4 +1,4 @@
-# Finance Organizer  
+# Assistente Financeiro
 
 ![React](https://img.shields.io/badge/React-18.2.0-blue)
 ![Tailwind CSS](https://img.shields.io/badge/Styling-Tailwind_CSS-06B6D4)
