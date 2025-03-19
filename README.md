@@ -7,7 +7,7 @@
 Aplicação web para controle financeiro pessoal, com funcionalidades de registro de receitas, despesas, investimentos e metas.  
 
 ## 🖥️ Preview  
-![Dashboard Preview](./screenshot-dashboard.png)  
+
 
 ## ✨ Funcionalidades  
 - **Dashboard:**  
