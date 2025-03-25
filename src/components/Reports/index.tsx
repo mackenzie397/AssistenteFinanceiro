@@ -1,16 +1,82 @@
-import React from 'react';
-import type { Transaction, Category } from '../../types';
+import React, { useState } from 'react';
+import { motion } from 'framer-motion';
+import { Tab } from '@headlessui/react';
+import { PieChart, LineChart, FileText } from 'lucide-react';
+import { MonthlyReport } from './MonthlyReport';
+import { InvestmentReport } from './InvestmentReport';
+import { TransactionReport } from './TransactionReport';
+import type { Transaction, Category, Investment } from '../../types';
 
 type Props = {
   transactions: Transaction[];
   categories: Category[];
+  investments: Investment[];
 };
 
-export function Reports({ transactions, categories }: Props) {
+function classNames(...classes: string[]) {
+  return classes.filter(Boolean).join(' ');
+}
+
+export function Reports({ transactions, categories, investments }: Props) {
+  const tabs = [
+    { name: 'Relatório Mensal', icon: PieChart },
+    { name: 'Relatório de Investimentos', icon: LineChart },
+    { name: 'Relatório de Transações', icon: FileText },
+  ];
+
   return (
-    <div>
-      <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Relatórios</h2>
-      {/* Placeholder - Will be implemented in the next step */}
-    </div>
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="space-y-6"
+    >
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Relatórios</h2>
+      </div>
+
+      <Tab.Group>
+        <Tab.List className="flex space-x-2 rounded-xl bg-indigo-100 dark:bg-dark-800 p-1">
+          {tabs.map((tab) => (
+            <Tab
+              key={tab.name}
+              className={({ selected }) =>
+                classNames(
+                  'w-full rounded-lg py-2.5 text-sm font-medium leading-5',
+                  'ring-white/60 ring-offset-2 ring-offset-indigo-400 focus:outline-none focus:ring-2',
+                  selected
+                    ? 'bg-white dark:bg-dark-700 text-indigo-700 dark:text-indigo-400 shadow'
+                    : 'text-gray-600 dark:text-gray-400 hover:bg-white/[0.12] hover:text-indigo-600'
+                )
+              }
+            >
+              <div className="flex items-center justify-center gap-2">
+                <tab.icon className="h-4 w-4" />
+                {tab.name}
+              </div>
+            </Tab>
+          ))}
+        </Tab.List>
+        <Tab.Panels className="mt-6">
+          <Tab.Panel>
+            <MonthlyReport
+              transactions={transactions}
+              categories={categories}
+            />
+          </Tab.Panel>
+          <Tab.Panel>
+            <InvestmentReport
+              investments={investments}
+              categories={categories}
+            />
+          </Tab.Panel>
+          <Tab.Panel>
+            <TransactionReport
+              transactions={transactions}
+              categories={categories}
+            />
+          </Tab.Panel>
+        </Tab.Panels>
+      </Tab.Group>
+    </motion.div>
   );
 }

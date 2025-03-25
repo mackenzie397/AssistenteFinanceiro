@@ -9,22 +9,26 @@ import { Reports } from './components/Reports';
 import { Categories } from './components/Categories';
 import { useLocalStorage } from './hooks/useLocalStorage';
 import { useTheme } from './hooks/useTheme';
-import type { Transaction, Category, Goal, BudgetSettings } from './types';
+import type { Transaction, Category, Goal, BudgetSettings, Investment } from './types';
 
 const defaultCategories: Category[] = [
-  { id: '1', name: 'Alimentação', color: '#f87171', budget: 800 },
-  { id: '2', name: 'Transporte', color: '#60a5fa', budget: 400 },
-  { id: '3', name: 'Lazer', color: '#34d399', budget: 300 },
-  { id: '4', name: 'Aluguel', color: '#a78bfa', budget: 1500 },
-  { id: '5', name: 'Utilidades', color: '#fbbf24', budget: 500 },
-  { id: '6', name: 'Compras', color: '#f472b6', budget: 400 },
-  { id: '7', name: 'Salário', color: '#818cf8' },
+  { id: '1', name: 'Alimentação', color: '#f87171', budget: 800, type: 'expense' },
+  { id: '2', name: 'Transporte', color: '#60a5fa', budget: 400, type: 'expense' },
+  { id: '3', name: 'Lazer', color: '#34d399', budget: 300, type: 'expense' },
+  { id: '4', name: 'Aluguel', color: '#a78bfa', budget: 1500, type: 'expense' },
+  { id: '5', name: 'Utilidades', color: '#fbbf24', budget: 500, type: 'expense' },
+  { id: '6', name: 'Compras', color: '#f472b6', budget: 400, type: 'expense' },
+  { id: '7', name: 'Salário', color: '#818cf8', type: 'income' },
+  { id: '8', name: 'Ações', color: '#10b981', type: 'investment' },
+  { id: '9', name: 'Fundos', color: '#6366f1', type: 'investment' },
+  { id: '10', name: 'Renda Fixa', color: '#8b5cf6', type: 'investment' },
 ];
 
 function App() {
   const [transactions, setTransactions] = useLocalStorage<Transaction[]>('transactions', []);
   const [categories, setCategories] = useLocalStorage<Category[]>('categories', defaultCategories);
   const [goals, setGoals] = useLocalStorage<Goal[]>('goals', []);
+  const [investments, setInvestments] = useLocalStorage<Investment[]>('investments', []);
   const [budgetSettings, setBudgetSettings] = useLocalStorage<BudgetSettings[]>('budgetSettings', []);
   const { theme, toggleTheme } = useTheme();
 
@@ -139,6 +143,7 @@ function App() {
                 <Reports
                   transactions={transactions}
                   categories={categories}
+                  investments={investments}
                 />
               }
             />
