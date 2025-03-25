@@ -25,8 +25,8 @@ export function ExpenseChart({ transactions, categories }: Props) {
   }));
 
   return (
-    <div className="bg-white rounded-2xl shadow-lg p-6 h-[400px]">
-      <h2 className="text-lg font-semibold text-gray-900 mb-4">Despesas por Categoria</h2>
+    <div className="bg-white dark:bg-dark-800 rounded-2xl shadow-lg p-6 h-[400px]">
+      <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Despesas por Categoria</h2>
       <ResponsiveContainer width="100%" height="100%">
         <PieChart>
           <Pie
