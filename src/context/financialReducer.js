@@ -1,5 +1,4 @@
-// src/context/financialReducer.ts
-import { Transaction, Goal, Category } from '../types';
+import type { Transaction, Goal, Category } from '../types';
 
 export type FinancialState = {
   transactions: Transaction[];
@@ -11,8 +10,8 @@ type Action =
   | { type: 'INIT_DATA'; payload: Partial<FinancialState> }
   | { type: 'ADD_TRANSACTION'; payload: Transaction }
   | { type: 'ADD_GOAL'; payload: Goal }
-  | { type: 'DELETE_TRANSACTION'; payload: number }
-  | { type: 'DELETE_GOAL'; payload: number };
+  | { type: 'DELETE_TRANSACTION'; payload: string }
+  | { type: 'DELETE_GOAL'; payload: string };
 
 export const initialState: FinancialState = {
   transactions: [],
