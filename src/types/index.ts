@@ -1,5 +1,18 @@
 export type TransactionType = 'income' | 'expense';
 
+export type UserRole = 'admin' | 'client';
+
+export type User = {
+  id: string;
+  name: string;
+  email: string;
+  role: UserRole;
+  avatar?: string;
+  createdAt: string;
+  lastLogin?: string;
+  isActive: boolean;
+};
+
 export type Category = {
   id: string;
   name: string;
@@ -15,6 +28,7 @@ export type Transaction = {
   type: TransactionType;
   date: string;
   categoryId: string;
+  userId: string;
 };
 
 export type Investment = {
@@ -26,6 +40,7 @@ export type Investment = {
   currentValue?: number;
   earnings?: number;
   lastUpdated?: string;
+  userId: string;
 };
 
 export type Goal = {
@@ -38,6 +53,7 @@ export type Goal = {
   type: 'savings' | 'investment';
   monthlyTarget?: number;
   yearlyTarget?: number;
+  userId: string;
 };
 
 export type Theme = 'light' | 'dark';
@@ -50,6 +66,7 @@ export type DateRange = {
 export type BudgetSettings = {
   categoryId: string;
   amount: number;
+  userId: string;
 };
 
 export type InvestmentSummary = {
@@ -57,4 +74,13 @@ export type InvestmentSummary = {
   totalEarnings: number;
   monthlyProgress: number;
   yearlyProgress: number;
+};
+
+export type AppSettings = {
+  userId: string;
+  theme: Theme;
+  language: string;
+  currency: string;
+  notifications: boolean;
+  emailNotifications: boolean;
 };
