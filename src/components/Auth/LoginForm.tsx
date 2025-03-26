@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form';
 import { motion } from 'framer-motion';
 import { LogIn, Mail, Lock } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { toast } from 'react-hot-toast';
 
 type FormData = {
   email: string;
@@ -19,6 +20,7 @@ export function LoginForm() {
       await login(data.email, data.password);
     } catch (error) {
       console.error('Login error:', error);
+      toast.error(error instanceof Error ? error.message : 'Erro ao fazer login');
     }
   };
 
@@ -44,7 +46,7 @@ export function LoginForm() {
           </p>
         </div>
 
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit(onSubmit)}>
+        <form onSubmit={handleSubmit(onSubmit)} className="mt-8 space-y-6">
           <div className="rounded-md shadow-sm space-y-4">
             <div>
               <label htmlFor="email" className="sr-only">

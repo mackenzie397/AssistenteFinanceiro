@@ -1,139 +1,133 @@
-import React from 'react';
-import { useForm } from 'react-hook-form';
-import { Plus } from 'lucide-react';
+import React, { useState } from 'react';
+import { X } from 'lucide-react';
 import type { Category } from '../../types';
 
 type Props = {
-  onAddCategory: (category: Omit<Category, 'id'>) => void;
-  editingCategory?: Category;
+  category?: Category | null;
+  onSubmit: (category: Omit<Category, 'id'>) => void;
+  onClose: () => void;
 };
 
-type FormData = {
-  name: string;
-  color: string;
-  type: 'expense' | 'income' | 'investment';
-  budget?: number;
-};
+export function CategoryForm({ category, onSubmit, onClose }: Props) {
+  const [name, setName] = useState(category?.name || '');
+  const [color, setColor] = useState(category?.color || '#6366F1');
+  const [type, setType] = useState<Category['type']>(category?.type || 'expense');
+  const [budget, setBudget] = useState(category?.budget?.toString() || '');
 
-const defaultColors = [
-  '#f87171', // red
-  '#fb923c', // orange
-  '#fbbf24', // amber
-  '#34d399', // emerald
-  '#60a5fa', // blue
-  '#818cf8', // indigo
-  '#a78bfa', // violet
-  '#f472b6', // pink
-];
-
-export function CategoryForm({ onAddCategory, editingCategory }: Props) {
-  const {
-    register,
-    handleSubmit,
-    reset,
-    watch,
-    formState: { errors }
-  } = useForm<FormData>({
-    defaultValues: editingCategory || {
-      color: defaultColors[0],
-      type: 'expense'
-    }
-  });
-
-  const selectedType = watch('type');
-
-  const onSubmit = (data: FormData) => {
-    onAddCategory(data);
-    if (!editingCategory) {
-      reset();
-    }
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSubmit({
+      name,
+      color,
+      type,
+      budget: budget ? Number(budget) : undefined
+    });
   };
 
   return (
-    <form
-      onSubmit={handleSubmit(onSubmit)}
-      className="bg-white dark:bg-dark-800 rounded-xl shadow-lg p-6"
-    >
-      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-        {editingCategory ? 'Editar Categoria' : 'Nova Categoria'}
-      </h3>
-
-      <div className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Nome
-          </label>
-          <input
-            type="text"
-            {...register('name', { required: 'Nome é obrigatório' })}
-            className="w-full rounded-md border-gray-300 dark:border-dark-600 dark:bg-dark-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-          />
-          {errors.name && (
-            <p className="mt-1 text-sm text-red-600">{errors.name.message}</p>
-          )}
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Tipo
-          </label>
-          <select
-            {...register('type', { required: 'Tipo é obrigatório' })}
-            className="w-full rounded-md border-gray-300 dark:border-dark-600 dark:bg-dark-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white dark:bg-dark-800 rounded-lg shadow-xl p-6 w-full max-w-md">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+            {category ? 'Editar Categoria' : 'Nova Categoria'}
+          </h2>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300"
           >
-            <option value="expense">Despesa</option>
-            <option value="income">Receita</option>
-            <option value="investment">Investimento</option>
-          </select>
+            <X className="h-5 w-5" />
+          </button>
         </div>
 
-        {selectedType === 'expense' && (
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Orçamento Mensal (opcional)
+              Nome
             </label>
             <input
-              type="number"
-              step="0.01"
-              min="0"
-              {...register('budget', { min: 0 })}
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
               className="w-full rounded-md border-gray-300 dark:border-dark-600 dark:bg-dark-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+              placeholder="Nome da categoria"
+              required
             />
           </div>
-        )}
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Cor
-          </label>
-          <div className="grid grid-cols-8 gap-2">
-            {defaultColors.map(color => (
-              <label
-                key={color}
-                className={`w-8 h-8 rounded-full cursor-pointer border-2 ${
-                  watch('color') === color ? 'border-indigo-500' : 'border-transparent'
-                }`}
-                style={{ backgroundColor: color }}
-              >
-                <input
-                  type="radio"
-                  value={color}
-                  {...register('color')}
-                  className="sr-only"
-                />
-              </label>
-            ))}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Cor
+            </label>
+            <div className="flex items-center space-x-2">
+              <input
+                type="color"
+                value={color}
+                onChange={(e) => setColor(e.target.value)}
+                className="h-8 w-8 rounded border-gray-300 dark:border-dark-600"
+              />
+              <input
+                type="text"
+                value={color}
+                onChange={(e) => setColor(e.target.value)}
+                className="flex-1 rounded-md border-gray-300 dark:border-dark-600 dark:bg-dark-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                pattern="^#[0-9A-Fa-f]{6}$"
+                required
+              />
+            </div>
           </div>
-        </div>
 
-        <button
-          type="submit"
-          className="w-full flex items-center justify-center gap-2 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-        >
-          <Plus className="h-4 w-4" />
-          <span>{editingCategory ? 'Salvar Alterações' : 'Adicionar Categoria'}</span>
-        </button>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Tipo
+            </label>
+            <select
+              value={type}
+              onChange={(e) => setType(e.target.value as Category['type'])}
+              className="w-full rounded-md border-gray-300 dark:border-dark-600 dark:bg-dark-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+            >
+              <option value="expense">Despesa</option>
+              <option value="income">Receita</option>
+              <option value="investment">Investimento</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Orçamento (opcional)
+            </label>
+            <div className="relative">
+              <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500 dark:text-gray-400">
+                R$
+              </span>
+              <input
+                type="number"
+                value={budget}
+                onChange={(e) => setBudget(e.target.value)}
+                className="w-full rounded-md border-gray-300 dark:border-dark-600 dark:bg-dark-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 pl-8"
+                placeholder="0,00"
+                min="0"
+                step="0.01"
+              />
+            </div>
+          </div>
+
+          <div className="flex justify-end space-x-3 pt-4">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-dark-700 border border-gray-300 dark:border-dark-600 rounded-md hover:bg-gray-50 dark:hover:bg-dark-600"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            >
+              {category ? 'Salvar' : 'Criar'}
+            </button>
+          </div>
+        </form>
       </div>
-    </form>
+    </div>
   );
 }

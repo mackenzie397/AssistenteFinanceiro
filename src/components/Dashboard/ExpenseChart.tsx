@@ -1,6 +1,27 @@
 import React from 'react';
-import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
-import { Transaction, Category } from '../../types';
+import { Bar } from 'react-chartjs-2';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  Scale,
+  Tick
+} from 'chart.js';
+import { formatCurrency } from '../../utils/formatters';
+import type { Transaction, Category } from '../../types';
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
 type Props = {
   transactions: Transaction[];
@@ -8,44 +29,66 @@ type Props = {
 };
 
 export function ExpenseChart({ transactions, categories }: Props) {
-  const expensesByCategory = transactions
-    .filter(t => t.type === 'expense')
-    .reduce((acc, curr) => {
-      const category = categories.find(c => c.id === curr.categoryId);
-      if (!category) return acc;
-      
-      acc[category.name] = (acc[category.name] || 0) + curr.amount;
-      return acc;
-    }, {} as Record<string, number>);
+  const expensesByCategory = categories
+    .filter(cat => cat.type === 'expense')
+    .map(category => {
+      const total = transactions
+        .filter(t => t.categoryId === category.id && t.type === 'expense')
+        .reduce((sum, t) => sum + t.amount, 0);
+      return {
+        category,
+        total
+      };
+    })
+    .sort((a, b) => b.total - a.total)
+    .slice(0, 5);
 
-  const data = Object.entries(expensesByCategory).map(([name, value]) => ({
-    name,
-    value,
-    color: categories.find(c => c.name === name)?.color || '#cbd5e1'
-  }));
+  const data = {
+    labels: expensesByCategory.map(item => item.category.name),
+    datasets: [
+      {
+        label: 'Despesas',
+        data: expensesByCategory.map(item => item.total),
+        backgroundColor: expensesByCategory.map(item => item.category.color),
+        borderRadius: 4
+      }
+    ]
+  };
 
-  return (
-    <div className="bg-white dark:bg-dark-800 rounded-2xl shadow-lg p-6 h-[400px]">
-      <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Despesas por Categoria</h2>
-      <ResponsiveContainer width="100%" height="100%">
-        <PieChart>
-          <Pie
-            data={data}
-            dataKey="value"
-            nameKey="name"
-            cx="50%"
-            cy="50%"
-            outerRadius={120}
-            label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-          >
-            {data.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={entry.color} />
-            ))}
-          </Pie>
-          <Tooltip formatter={(value: number) => `R$ ${value.toFixed(2)}`} />
-          <Legend />
-        </PieChart>
-      </ResponsiveContainer>
-    </div>
-  );
+  const options = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        display: false
+      },
+      tooltip: {
+        callbacks: {
+          label: (context: any) => {
+            return formatCurrency(context.raw);
+          }
+        }
+      }
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: {
+          callback: function(
+            this: Scale<any>,
+            value: number | string,
+            index: number,
+            ticks: Tick[]
+          ): string | null {
+            if (typeof value === 'number') {
+              return formatCurrency(value);
+            }
+            return null;
+          }
+        }
+      }
+    }
+  };
+
+  return <Bar data={data} options={options} />;
 }

@@ -4,11 +4,11 @@ import { Tab } from '@headlessui/react';
 import { Settings as SettingsIcon, Users, Sliders } from 'lucide-react';
 import { UserManagement } from './UserManagement';
 import { AppSettings } from './AppSettings';
-import type { Category, BudgetSettings } from '../../types';
+import type { Category } from '../../types';
 
 type Props = {
   categories: Category[];
-  budgetSettings: BudgetSettings[];
+  budgetSettings: number[];
   onUpdateBudget: (categoryId: string, amount: number) => void;
 };
 

@@ -14,6 +14,7 @@ import { AuthProvider } from './context/AuthContext';
 import { useLocalStorage } from './hooks/useLocalStorage';
 import { useTheme } from './hooks/useTheme';
 import type { Transaction, Category, Goal, BudgetSettings, Investment } from './types';
+import { PublicRoute } from './components/Auth/PublicRoute';
 
 const defaultCategories: Category[] = [
   { id: '1', name: 'Alimentação', color: '#f87171', budget: 800, type: 'expense' },
@@ -104,29 +105,34 @@ function App() {
     <Router>
       <AuthProvider>
         <div className={`min-h-screen bg-gray-100 dark:bg-dark-900 transition-colors duration-200 ${theme}`}>
+          <Toaster position="top-right" />
           <Routes>
-            <Route path="/login" element={<LoginForm />} />
-            <Route path="/register" element={<RegisterForm />} />
-            
-            <Route
-              path="/"
-              element={
-                <ProtectedRoute>
-                  <>
-                    <Header theme={theme} onToggleTheme={toggleTheme} />
-                    <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                      <Dashboard
-                        transactions={transactions}
-                        categories={categories}
-                        onAddTransaction={handleAddTransaction}
-                        onDeleteTransaction={handleDeleteTransaction}
-                        onEditTransaction={handleEditTransaction}
-                      />
-                    </main>
-                  </>
-                </ProtectedRoute>
-              }
-            />
+            <Route path="/login" element={
+              <PublicRoute>
+                <LoginForm />
+              </PublicRoute>
+            } />
+            <Route path="/register" element={
+              <PublicRoute>
+                <RegisterForm />
+              </PublicRoute>
+            } />
+            <Route path="/" element={
+              <ProtectedRoute>
+                <>
+                  <Header theme={theme} onToggleTheme={toggleTheme} />
+                  <main className="max-w-7xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8 py-4 md:py-8">
+                    <Dashboard
+                      transactions={transactions}
+                      categories={categories}
+                      onAddTransaction={handleAddTransaction}
+                      onDeleteTransaction={handleDeleteTransaction}
+                      onEditTransaction={handleEditTransaction}
+                    />
+                  </main>
+                </>
+              </ProtectedRoute>
+            } />
 
             <Route
               path="/goals"
@@ -134,7 +140,7 @@ function App() {
                 <ProtectedRoute>
                   <>
                     <Header theme={theme} onToggleTheme={toggleTheme} />
-                    <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                    <main className="max-w-7xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8 py-4 md:py-8">
                       <Goals
                         goals={goals}
                         onAddGoal={handleAddGoal}
@@ -153,7 +159,7 @@ function App() {
                 <ProtectedRoute>
                   <>
                     <Header theme={theme} onToggleTheme={toggleTheme} />
-                    <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                    <main className="max-w-7xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8 py-4 md:py-8">
                       <Categories
                         categories={categories}
                         onAddCategory={handleAddCategory}
@@ -172,7 +178,7 @@ function App() {
                 <ProtectedRoute>
                   <>
                     <Header theme={theme} onToggleTheme={toggleTheme} />
-                    <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                    <main className="max-w-7xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8 py-4 md:py-8">
                       <Reports
                         transactions={transactions}
                         categories={categories}
@@ -190,7 +196,7 @@ function App() {
                 <ProtectedRoute requireAdmin>
                   <>
                     <Header theme={theme} onToggleTheme={toggleTheme} />
-                    <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                    <main className="max-w-7xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8 py-4 md:py-8">
                       <Settings
                         categories={categories}
                         budgetSettings={budgetSettings}
@@ -205,7 +211,6 @@ function App() {
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </div>
-        <Toaster position="top-right" />
       </AuthProvider>
     </Router>
   );

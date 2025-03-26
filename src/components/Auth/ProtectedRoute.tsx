@@ -8,14 +8,14 @@ type Props = {
 };
 
 export function ProtectedRoute({ children, requireAdmin = false }: Props) {
-  const { isAuthenticated, isAdmin } = useAuth();
+  const { currentUser } = useAuth();
   const location = useLocation();
 
-  if (!isAuthenticated) {
+  if (!currentUser) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  if (requireAdmin && !isAdmin) {
+  if (requireAdmin && currentUser.role !== 'admin') {
     return <Navigate to="/" replace />;
   }
 

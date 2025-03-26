@@ -19,29 +19,29 @@ function classNames(...classes: string[]) {
 
 export function Reports({ transactions, categories, investments }: Props) {
   const tabs = [
-    { name: 'Relatório Mensal', icon: PieChart },
-    { name: 'Relatório de Investimentos', icon: LineChart },
-    { name: 'Relatório de Transações', icon: FileText },
+    { name: 'Relatório Mensal', icon: PieChart, shortName: 'Mensal' },
+    { name: 'Relatório de Investimentos', icon: LineChart, shortName: 'Investimentos' },
+    { name: 'Relatório de Transações', icon: FileText, shortName: 'Transações' },
   ];
 
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="space-y-6"
+      className="space-y-4 md:space-y-6"
     >
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Relatórios</h2>
+        <h2 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">Relatórios</h2>
       </div>
 
       <Tab.Group>
-        <Tab.List className="flex space-x-2 rounded-xl bg-indigo-100 dark:bg-dark-800 p-1">
+        <Tab.List className="flex space-x-1 sm:space-x-2 rounded-xl bg-indigo-100 dark:bg-dark-800 p-1">
           {tabs.map((tab) => (
             <Tab
               key={tab.name}
               className={({ selected }) =>
                 classNames(
-                  'w-full rounded-lg py-2.5 text-sm font-medium leading-5',
+                  'w-full rounded-lg py-2 sm:py-2.5 text-xs sm:text-sm font-medium leading-5',
                   'ring-white/60 ring-offset-2 ring-offset-indigo-400 focus:outline-none focus:ring-2',
                   selected
                     ? 'bg-white dark:bg-dark-700 text-indigo-700 dark:text-indigo-400 shadow'
@@ -49,14 +49,15 @@ export function Reports({ transactions, categories, investments }: Props) {
                 )
               }
             >
-              <div className="flex items-center justify-center gap-2">
+              <div className="flex items-center justify-center gap-1 sm:gap-2">
                 <tab.icon className="h-4 w-4" />
-                {tab.name}
+                <span className="hidden sm:inline">{tab.name}</span>
+                <span className="sm:hidden">{tab.shortName}</span>
               </div>
             </Tab>
           ))}
         </Tab.List>
-        <Tab.Panels className="mt-6">
+        <Tab.Panels className="mt-4 md:mt-6">
           <Tab.Panel>
             <MonthlyReport
               transactions={transactions}

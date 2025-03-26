@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form';
 import { motion } from 'framer-motion';
 import { UserPlus, Mail, Lock, User } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { toast } from 'react-hot-toast';
 
 type FormData = {
   name: string;
@@ -19,13 +20,10 @@ export function RegisterForm() {
 
   const onSubmit = async (data: FormData) => {
     try {
-      await registerUser({
-        name: data.name,
-        email: data.email,
-        password: data.password,
-      });
+      await registerUser(data.name, data.email, data.password);
     } catch (error) {
       console.error('Registration error:', error);
+      toast.error(error instanceof Error ? error.message : 'Erro ao criar conta');
     }
   };
 
@@ -51,7 +49,7 @@ export function RegisterForm() {
           </p>
         </div>
 
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit(onSubmit)}>
+        <form onSubmit={handleSubmit(onSubmit)} className="mt-8 space-y-6">
           <div className="rounded-md shadow-sm space-y-4">
             <div>
               <label htmlFor="name" className="sr-only">

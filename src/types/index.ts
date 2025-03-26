@@ -1,4 +1,4 @@
-export type TransactionType = 'income' | 'expense';
+export type TransactionType = 'income' | 'expense' | 'investment';
 
 export type UserRole = 'admin' | 'client';
 
@@ -6,11 +6,12 @@ export type User = {
   id: string;
   name: string;
   email: string;
-  role: UserRole;
-  avatar?: string;
-  createdAt: string;
-  lastLogin?: string;
+  password?: string;
+  role: 'admin' | 'user';
   isActive: boolean;
+  createdAt: Date;
+  lastLogin?: string;
+  avatar?: string;
 };
 
 export type Category = {
@@ -18,7 +19,7 @@ export type Category = {
   name: string;
   color: string;
   budget?: number;
-  type: 'expense' | 'income' | 'investment';
+  type: TransactionType;
 };
 
 export type Transaction = {
@@ -26,8 +27,8 @@ export type Transaction = {
   title: string;
   amount: number;
   type: TransactionType;
+  category: string;
   date: string;
-  categoryId: string;
   userId: string;
 };
 
@@ -45,23 +46,22 @@ export type Investment = {
 
 export type Goal = {
   id: string;
-  title: string;
-  targetAmount: number;
-  currentAmount: number;
-  deadline: string;
-  description?: string;
-  type: 'savings' | 'investment';
-  monthlyTarget?: number;
-  yearlyTarget?: number;
+  date: Date;
+  description: string;
+  monthlyTarget: number;
+  yearlyTarget: number;
+  type: 'investment' | 'savings' | 'expense';
+  progress: number;
+  isCompleted: boolean;
   userId: string;
 };
 
-export type Theme = 'light' | 'dark';
+export type Theme = 'light' | 'dark' | 'system';
 
-export type DateRange = {
+export interface DateRange {
   startDate: string;
   endDate: string;
-};
+}
 
 export type BudgetSettings = {
   categoryId: string;
@@ -83,4 +83,19 @@ export type AppSettings = {
   currency: string;
   notifications: boolean;
   emailNotifications: boolean;
+};
+
+export type Budget = {
+  id: string;
+  month: number;
+  year: number;
+  categories: BudgetCategory[];
+  userId: string;
+};
+
+export type BudgetCategory = {
+  id: string;
+  name: string;
+  planned: number;
+  actual: number;
 };
