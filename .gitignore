@@ -5,6 +5,9 @@
 /.pnpm-store
 /.yarn
 /.pnp
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
 
 # Builds e cache
 /dist
@@ -14,15 +17,25 @@
 /out
 .cache
 *.tsbuildinfo
+/.svelte-kit
+/.output
+/.vercel
+/.netlify
+/storybook-static
 
 # Ambiente
-.env
+.env*
+!.env.example
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
 .firebase
 .firebaserc
+firebase.json
+serviceAccount.json
+google-services.json
+GoogleService-Info.plist
 
 # Logs e diagnósticos
 npm-debug.log*
@@ -32,35 +45,113 @@ yarn-error.log*
 firebase-debug.log
 *.log
 logs
+debug.log
+error.log
 
 # Editor/IDE
-.vscode
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json.example
 .idea
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
+.project
+.classpath
+*.sublime-*
+.atom/
 
 # Sistema operacional
 .DS_Store
 Thumbs.db
 Desktop.ini
+ehthumbs.db
+$RECYCLE.BIN/
+._*
+.Spotlight-V100
+.Trashes
+Icon?
 
 # Testes
 /coverage
 .nyc_output
+/.jest-cache
+/.cypress
+/cypress/screenshots
+/cypress/videos
+/playwright-report
 
-# Firebase
-.firebase/
-
-# Arquivos temporários
+# Dados temporários e específicos do usuário
+/data
+/uploads
+/tmp
 .tmp
 .temp
+*.tmp
+*.bak
+*.swp
+
+# Documentos e arquivos específicos do ambiente
+TODO.md
+NOTES.md
+*.local.*
+.history/
+.turbo
+
+# Credenciais e tokens
+*credentials.json
+*token.json
+*apiKey.json
+*secret*
+.npmrc
+.env.production
+.git-credentials
+.well-known/
+**/config/auth.config.ts
+**/config/admin.config.ts
+**/config/api.config.ts
+**/config/*.config.ts
+!**/config/*.example.ts
+!**/config/*.template.ts
+!**/config/*.sample.ts
+
+# Arquivos JWT e chaves
+jwt-secret.*.ts
+**/utils/jwt-secret.ts
+private-key.pem
+public-key.pem
+*.key
+*.pem
+*.cert
+*.ca
+*.jks
+*.keystore
+*.p12
+*.pfx
 
 # TypeScript
 *.js.map
 *.d.ts
+*.tsbuildinfo
+
+# Ferramentas de bundle
+stats.html
+stats.json
+
+# Dados locais da aplicação
+/mock-data
+/dev-data
+.localdb
+*.sqlite
+*.sqlite3
+/src/data/*.json
+/local-only-*
+local-storage-backup.json
+user-data.json
+**/*-local.json
+**/local-config.ts
 
 # Vite
 .husky

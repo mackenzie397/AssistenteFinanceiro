@@ -1,10 +1,13 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { motion } from 'framer-motion';
-import { UserPlus, Mail, Lock, User } from 'lucide-react';
-import { useAuth } from '../../context/AuthContext';
+import { Mail, Lock, User, LogIn } from 'lucide-react';
 import { toast } from 'react-hot-toast';
+import { useAuth } from '../../hooks/useAuth';
+import { generateSecureId, hashPassword } from '../../utils/security';
+import { userStorage } from '../../utils/storage';
+import { UserRole } from '../../types';
 
 type FormData = {
   name: string;
@@ -14,15 +17,45 @@ type FormData = {
 };
 
 export function RegisterForm() {
-  const { register: registerUser } = useAuth();
+  const navigate = useNavigate();
+  const { signIn } = useAuth();
   const { register, handleSubmit, watch, formState: { errors, isSubmitting } } = useForm<FormData>();
+  
   const password = watch('password');
 
   const onSubmit = async (data: FormData) => {
     try {
-      await registerUser(data.name, data.email, data.password);
+      // Verificar se o email já existe
+      const existingUser = userStorage.findByEmail(data.email);
+      if (existingUser) {
+        toast.error('Email já cadastrado');
+        return;
+      }
+
+      // Hash da senha
+      const passwordHash = await hashPassword(data.password);
+      
+      // Criar o usuário
+      const newUser = {
+        id: generateSecureId(),
+        name: data.name,
+        email: data.email,
+        password: passwordHash,
+        role: 'user' as UserRole,
+        isActive: true,
+        createdAt: new Date().toISOString()
+      };
+      
+      // Salvar no storage
+      userStorage.add(newUser);
+      
+      // Fazer login com o novo usuário
+      await signIn({ email: data.email, password: data.password });
+      
+      toast.success('Conta criada com sucesso!');
+      navigate('/');
     } catch (error) {
-      console.error('Registration error:', error);
+      console.error('Register error:', error);
       toast.error(error instanceof Error ? error.message : 'Erro ao criar conta');
     }
   };
@@ -44,7 +77,7 @@ export function RegisterForm() {
               to="/login"
               className="font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400"
             >
-              faça login com uma conta existente
+              entre na sua conta existente
             </Link>
           </p>
         </div>
@@ -64,7 +97,7 @@ export function RegisterForm() {
                     required: 'Nome é obrigatório',
                     minLength: {
                       value: 3,
-                      message: 'O nome deve ter no mínimo 3 caracteres',
+                      message: 'Nome deve ter no mínimo 3 caracteres',
                     },
                   })}
                   type="text"
@@ -139,13 +172,12 @@ export function RegisterForm() {
                 </div>
                 <input
                   {...register('confirmPassword', {
-                    required: 'Confirmação de senha é obrigatória',
-                    validate: value =>
-                      value === password || 'As senhas não coincidem',
+                    required: 'Confirme sua senha',
+                    validate: value => value === password || 'As senhas não correspondem',
                   })}
                   type="password"
                   className="appearance-none rounded-lg relative block w-full pl-10 px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white dark:bg-dark-800 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                  placeholder="Confirmar senha"
+                  placeholder="Confirmar Senha"
                 />
               </div>
               {errors.confirmPassword && (
@@ -161,7 +193,7 @@ export function RegisterForm() {
               className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
             >
               <span className="absolute left-0 inset-y-0 flex items-center pl-3">
-                <UserPlus className="h-5 w-5 text-indigo-500 group-hover:text-indigo-400" />
+                <LogIn className="h-5 w-5 text-indigo-500 group-hover:text-indigo-400" />
               </span>
               {isSubmitting ? 'Criando conta...' : 'Criar conta'}
             </button>

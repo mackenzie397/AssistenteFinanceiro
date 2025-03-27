@@ -9,4 +9,17 @@ export default defineConfig({
       '@': '/src',
     },
   },
+  // Resolver aviso do crypto e módulos externos
+  optimizeDeps: {
+    esbuildOptions: {
+      define: {
+        global: 'globalThis',
+      },
+    },
+  },
+  // Polyfills para navegadores
+  define: {
+    'process.env': {},
+    'global': {},
+  },
 });

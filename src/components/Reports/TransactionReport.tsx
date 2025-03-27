@@ -17,10 +17,12 @@ export function TransactionReport({ transactions, categories }: Props) {
     endDate: format(new Date(), 'yyyy-MM-dd'),
   });
 
+  // Filtrar transações por data e remover investimentos
   const filteredTransactions = transactions
     .filter(transaction => {
       const transactionDate = new Date(transaction.date);
-      return transactionDate >= new Date(dateRange.startDate) && 
+      return transaction.type !== 'investment' && // Remover investimentos
+             transactionDate >= new Date(dateRange.startDate) && 
              transactionDate <= new Date(dateRange.endDate);
     })
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
@@ -198,7 +200,7 @@ export function TransactionReport({ transactions, categories }: Props) {
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
                   Total Receitas
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-medium text-green-600 dark:text-green-400">
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-right text-green-600 dark:text-green-400">
                   R$ {totalIncome.toFixed(2)}
                 </td>
               </tr>
@@ -207,18 +209,18 @@ export function TransactionReport({ transactions, categories }: Props) {
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
                   Total Despesas
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-medium text-red-600 dark:text-red-400">
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-right text-red-600 dark:text-red-400">
                   R$ {totalExpenses.toFixed(2)}
                 </td>
               </tr>
               <tr>
                 <td colSpan={3} className="px-6 py-4"></td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
-                  Saldo Final
+                  Saldo
                 </td>
-                <td className={`px-6 py-4 whitespace-nowrap text-sm text-right font-medium ${
-                  balance >= 0 
-                    ? 'text-green-600 dark:text-green-400' 
+                <td className={`px-6 py-4 whitespace-nowrap text-sm font-medium text-right ${
+                  balance >= 0
+                    ? 'text-green-600 dark:text-green-400'
                     : 'text-red-600 dark:text-red-400'
                 }`}>
                   R$ {balance.toFixed(2)}
@@ -228,6 +230,14 @@ export function TransactionReport({ transactions, categories }: Props) {
           </table>
         </div>
       </div>
+      
+      {filteredTransactions.length === 0 && (
+        <div className="bg-white dark:bg-dark-800 rounded-lg shadow p-8 text-center">
+          <p className="text-gray-500 dark:text-gray-400">
+            Nenhuma transação encontrada para o período selecionado.
+          </p>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
 import { DollarSign, TrendingUp, ArrowDownCircle, ArrowUpCircle } from 'lucide-react';
 import type { Transaction, Category, TransactionType } from '../../types';
+import { useFinancialContext } from '../../contexts/FinancialContext';
 
 type Props = {
   categories: Category[];
@@ -10,10 +10,16 @@ type Props = {
 };
 
 export function TransactionForm({ categories, onSubmit, onClose }: Props) {
+  const { addInvestment } = useFinancialContext();
   const [title, setTitle] = useState('');
   const [amount, setAmount] = useState('');
-  const [category, setCategory] = useState('');
-  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const [categoryId, setCategoryId] = useState('');
+  
+  // Configurar a data atual corretamente formatada no formato ISO
+  const today = new Date();
+  const formattedDate = today.toISOString().split('T')[0];
+  const [date, setDate] = useState(formattedDate);
+
   const [selectedType, setSelectedType] = useState<TransactionType>('expense');
 
   // Filtra as categorias baseado no tipo selecionado
@@ -21,17 +27,40 @@ export function TransactionForm({ categories, onSubmit, onClose }: Props) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const parsedAmount = Number(amount);
+    
+    // Corrigir problema de fusos horários com a data
+    // Garantir que a data seja interpretada com fuso horário local
+    const [year, month, day] = date.split('-').map(Number);
+    const localDate = new Date(year, month - 1, day, 12, 0, 0);
+    const isoDate = localDate.toISOString().split('T')[0]; // Pegar apenas a parte da data
+    
+    // Adicionar a transação com a data corrigida
     onSubmit({
       title,
-      amount: Number(amount),
-      category,
-      date,
+      amount: parsedAmount,
+      categoryId,
+      date: isoDate,
       type: selectedType
     });
+    
+    // Se for investimento, também adiciona ao registro de investimentos
+    if (selectedType === 'investment') {
+      addInvestment({
+        title,
+        amount: parsedAmount,
+        categoryId,
+        date: isoDate,
+        lastUpdated: new Date().toISOString(),
+        description: ''
+      });
+    }
+    
+    // Limpar formulário
     setTitle('');
     setAmount('');
-    setCategory('');
-    setDate(new Date().toISOString().split('T')[0]);
+    setCategoryId('');
+    setDate(formattedDate);
   };
 
   const transactionTypes = [
@@ -40,49 +69,55 @@ export function TransactionForm({ categories, onSubmit, onClose }: Props) {
       label: 'Despesa',
       icon: ArrowDownCircle,
       color: 'text-red-500',
-      bgColor: 'bg-red-100 dark:bg-red-900/20'
+      bgColor: 'bg-red-100 dark:bg-red-900/30',
+      borderColor: 'border-red-400 dark:border-red-800',
+      hoverBg: 'hover:bg-red-200 dark:hover:bg-red-900/50'
     },
     {
       type: 'income' as const,
       label: 'Receita',
       icon: ArrowUpCircle,
       color: 'text-green-500',
-      bgColor: 'bg-green-100 dark:bg-green-900/20'
+      bgColor: 'bg-green-100 dark:bg-green-900/30',
+      borderColor: 'border-green-400 dark:border-green-800',
+      hoverBg: 'hover:bg-green-200 dark:hover:bg-green-900/50'
     },
     {
       type: 'investment' as const,
       label: 'Investimento',
       icon: TrendingUp,
       color: 'text-indigo-500',
-      bgColor: 'bg-indigo-100 dark:bg-indigo-900/20'
+      bgColor: 'bg-indigo-100 dark:bg-indigo-900/30',
+      borderColor: 'border-indigo-400 dark:border-indigo-800',
+      hoverBg: 'hover:bg-indigo-200 dark:hover:bg-indigo-900/50'
     }
   ];
 
   // Reseta a categoria selecionada quando mudar o tipo
   const handleTypeChange = (type: typeof selectedType) => {
     setSelectedType(type);
-    setCategory(''); // Limpa a categoria selecionada
+    setCategoryId(''); // Limpa a categoria selecionada
   };
 
   return (
-    <div className="bg-white dark:bg-dark-800 rounded-xl shadow-lg p-6">
-      <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
-        <DollarSign className="h-6 w-6 text-indigo-500" />
+    <div className="space-y-5">
+      <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+        <DollarSign className="h-5 w-5 text-indigo-500" />
         Nova Transação
-      </h2>
+      </h3>
 
-      <div className="grid grid-cols-3 gap-4 mb-6">
-        {transactionTypes.map(({ type, label, icon: Icon, color, bgColor }) => (
+      <div className="grid grid-cols-3 gap-3">
+        {transactionTypes.map(({ type, label, icon: Icon, color, bgColor, borderColor, hoverBg }) => (
           <button
             key={type}
             onClick={() => handleTypeChange(type)}
-            className={`flex flex-col items-center justify-center p-4 rounded-lg transition-all ${
+            className={`flex flex-col items-center justify-center p-3 rounded-lg border-2 transition-all ${
               selectedType === type
-                ? `${bgColor} ${color} ring-2 ring-offset-2 ring-current`
-                : 'bg-gray-50 dark:bg-dark-700 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-dark-600'
-            }`}
+                ? `${bgColor} ${color} ${borderColor}`
+                : 'bg-gray-50 dark:bg-dark-700 text-gray-500 dark:text-gray-400 border-transparent'
+            } ${hoverBg}`}
           >
-            <Icon className="h-6 w-6 mb-2" />
+            <Icon className="h-5 w-5 mb-1" />
             <span className="text-sm font-medium">{label}</span>
           </button>
         ))}
@@ -120,13 +155,13 @@ export function TransactionForm({ categories, onSubmit, onClose }: Props) {
         </div>
 
         <div>
-          <label htmlFor="category" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+          <label htmlFor="categoryId" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
             Categoria
           </label>
           <select
-            id="category"
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
+            id="categoryId"
+            value={categoryId}
+            onChange={(e) => setCategoryId(e.target.value)}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-dark-700 dark:border-dark-600 dark:text-white"
             required
           >
@@ -158,7 +193,7 @@ export function TransactionForm({ categories, onSubmit, onClose }: Props) {
           />
         </div>
 
-        <div className="flex justify-end gap-2 pt-4">
+        <div className="flex justify-end space-x-3">
           <button
             type="button"
             onClick={onClose}

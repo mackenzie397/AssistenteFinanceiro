@@ -5,23 +5,18 @@ import { formatCurrency } from '../../utils/formatters';
 import { ExpenseChart } from './ExpenseChart';
 import { TransactionList } from './TransactionList';
 import { TransactionForm } from '../Transactions/TransactionForm';
-import type { Transaction, Category } from '../../types';
+import { useFinancialContext } from '../../contexts/FinancialContext';
+import type { Transaction } from '../../types';
 
-type Props = {
-  transactions: Transaction[];
-  categories: Category[];
-  onAddTransaction: (transaction: Omit<Transaction, 'id'>) => void;
-  onDeleteTransaction: (id: string) => void;
-  onEditTransaction: (transaction: Transaction) => void;
-};
-
-export function Dashboard({ 
-  transactions, 
-  categories,
-  onAddTransaction,
-  onDeleteTransaction,
-  onEditTransaction
-}: Props) {
+export function Dashboard() {
+  const { 
+    transactions, 
+    categories,
+    addTransaction,
+    deleteTransaction,
+    editTransaction
+  } = useFinancialContext();
+  
   const [selectedMonth, setSelectedMonth] = useState(new Date());
   const [showMonthSelector, setShowMonthSelector] = useState(false);
 
@@ -54,7 +49,29 @@ export function Dashboard({
     .filter(t => t.type === 'investment')
     .reduce((sum, t) => sum + t.amount, 0);
 
+  // Saldo = Receitas - Despesas
+  // Obs: Os investimentos não são considerados como saídas neste cálculo,
+  // pois representam alocação de recursos e não gastos
   const balance = income - expenses;
+
+  // Adapta a interface do addTransaction para a esperada pelo TransactionForm
+  const handleAddTransaction = (transaction: Partial<Transaction>) => {
+    if (
+      transaction.title && 
+      transaction.amount !== undefined &&
+      transaction.categoryId && 
+      transaction.date && 
+      transaction.type
+    ) {
+      addTransaction({
+        title: transaction.title,
+        amount: transaction.amount,
+        categoryId: transaction.categoryId,
+        date: transaction.date,
+        type: transaction.type
+      });
+    }
+  };
 
   return (
     <motion.div
@@ -181,12 +198,9 @@ export function Dashboard({
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <div className="bg-white dark:bg-dark-800 rounded-xl shadow-lg p-6">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-            Nova Transação
-          </h3>
           <TransactionForm
             categories={categories}
-            onSubmit={onAddTransaction}
+            onSubmit={handleAddTransaction}
             onClose={() => {}}
           />
         </div>
@@ -208,8 +222,8 @@ export function Dashboard({
         <TransactionList 
           transactions={filteredTransactions} 
           categories={categories}
-          onDeleteTransaction={onDeleteTransaction}
-          onEditTransaction={onEditTransaction}
+          onDeleteTransaction={deleteTransaction}
+          onEditTransaction={editTransaction}
         />
       </div>
     </motion.div>

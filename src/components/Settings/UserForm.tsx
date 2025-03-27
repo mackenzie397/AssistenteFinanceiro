@@ -9,8 +9,8 @@ type Props = {
     email: string;
     role: string;
     isActive: boolean;
-    createdAt: Date;
-    lastLogin: Date;
+    createdAt: string | Date;
+    lastLogin?: string | Date;
   };
   isCurrentUser?: boolean;
   onSubmit: (data: FormData) => void;
@@ -39,7 +39,7 @@ export function UserForm({ user, isCurrentUser, onSubmit, onClose }: Props) {
     defaultValues: user || {
       name: '',
       email: '',
-      role: 'client',
+      role: 'user',
       isActive: true
     }
   });
@@ -112,7 +112,7 @@ export function UserForm({ user, isCurrentUser, onSubmit, onClose }: Props) {
                   {...register('role')}
                   className="w-full rounded-md border-gray-300 dark:border-dark-600 dark:bg-dark-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                 >
-                  <option value="client">Cliente</option>
+                  <option value="user">Cliente</option>
                   <option value="admin">Administrador</option>
                 </select>
               </div>

@@ -5,20 +5,16 @@ import { CategoryList } from './CategoryList';
 import { CategoryForm } from './CategoryForm';
 import type { Category } from '../../types';
 import { toast } from 'react-hot-toast';
+import { useFinancialContext } from '../../contexts/FinancialContext';
 
-type Props = {
-  categories: Category[];
-  onAddCategory: (category: Omit<Category, 'id'>) => void;
-  onEditCategory: (category: Category) => void;
-  onDeleteCategory: (id: string) => void;
-};
-
-export function Categories({
-  categories,
-  onAddCategory,
-  onEditCategory,
-  onDeleteCategory
-}: Props) {
+export function Categories() {
+  const { 
+    categories, 
+    addCategory, 
+    editCategory, 
+    deleteCategory 
+  } = useFinancialContext();
+  
   const [showForm, setShowForm] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
 
@@ -34,16 +30,16 @@ export function Categories({
 
   const handleSubmit = (category: Omit<Category, 'id'>) => {
     if (editingCategory) {
-      onEditCategory({ ...category, id: editingCategory.id });
+      editCategory({ ...category, id: editingCategory.id });
     } else {
-      onAddCategory(category);
+      addCategory(category);
     }
     handleCloseForm();
     toast.success('Categoria criada com sucesso!');
   };
 
   const handleDeleteCategory = (id: string) => {
-    onDeleteCategory(id);
+    deleteCategory(id);
     toast.success('Categoria excluída com sucesso!');
   };
 
