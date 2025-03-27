@@ -5,19 +5,15 @@ import { PieChart, LineChart, FileText } from 'lucide-react';
 import { MonthlyReport } from './MonthlyReport';
 import { InvestmentReport } from './InvestmentReport';
 import { TransactionReport } from './TransactionReport';
-import type { Transaction, Category, Investment } from '../../types';
-
-type Props = {
-  transactions: Transaction[];
-  categories: Category[];
-  investments: Investment[];
-};
+import { useFinancialContext } from '../../contexts/FinancialContext';
 
 function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(' ');
 }
 
-export function Reports({ transactions, categories, investments }: Props) {
+export function Reports() {
+  const { transactions, categories, investments } = useFinancialContext();
+  
   const tabs = [
     { name: 'Relatório Mensal', icon: PieChart, shortName: 'Mensal' },
     { name: 'Relatório de Investimentos', icon: LineChart, shortName: 'Investimentos' },

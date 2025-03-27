@@ -1,25 +1,41 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Tab } from '@headlessui/react';
-import { Settings as SettingsIcon, Users, Sliders } from 'lucide-react';
+import { Settings as SettingsIcon, Users, Sliders, Tag } from 'lucide-react';
 import { UserManagement } from './UserManagement';
 import { AppSettings } from './AppSettings';
-import type { Category } from '../../types';
-
-type Props = {
-  categories: Category[];
-  budgetSettings: number[];
-  onUpdateBudget: (categoryId: string, amount: number) => void;
-};
+import { CategoryManagement } from './CategoryManagement';
+import { useFinancialContext } from '../../contexts/FinancialContext';
 
 function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(' ');
 }
 
-export function Settings({ categories, budgetSettings, onUpdateBudget }: Props) {
+export function Settings() {
+  const { categories, budgetSettings, updateBudget } = useFinancialContext();
+  
   const tabs = [
-    { name: 'Configurações Gerais', icon: Sliders, component: AppSettings },
-    { name: 'Usuários', icon: Users, component: UserManagement },
+    { 
+      name: 'Configurações Gerais', 
+      icon: Sliders, 
+      component: () => (
+        <AppSettings 
+          categories={categories} 
+          budgetSettings={budgetSettings} 
+          onUpdateBudget={updateBudget} 
+        />
+      ) 
+    },
+    { 
+      name: 'Categorias', 
+      icon: Tag, 
+      component: () => <CategoryManagement /> 
+    },
+    { 
+      name: 'Usuários', 
+      icon: Users, 
+      component: () => <UserManagement /> 
+    },
   ];
 
   return (
@@ -63,7 +79,7 @@ export function Settings({ categories, budgetSettings, onUpdateBudget }: Props) 
               key={idx}
               className="bg-white dark:bg-dark-800 rounded-xl shadow-lg p-6"
             >
-              <tab.component />
+              {tab.component()}
             </Tab.Panel>
           ))}
         </Tab.Panels>

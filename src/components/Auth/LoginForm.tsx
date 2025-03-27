@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { motion } from 'framer-motion';
 import { LogIn, Mail, Lock } from 'lucide-react';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../hooks/useAuth';
 import { toast } from 'react-hot-toast';
 
 type FormData = {
@@ -12,12 +12,12 @@ type FormData = {
 };
 
 export function LoginForm() {
-  const { login } = useAuth();
+  const { signIn } = useAuth();
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormData>();
 
   const onSubmit = async (data: FormData) => {
     try {
-      await login(data.email, data.password);
+      await signIn({ email: data.email, password: data.password });
     } catch (error) {
       console.error('Login error:', error);
       toast.error(error instanceof Error ? error.message : 'Erro ao fazer login');

@@ -1,10 +1,19 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { jwtDecode } from 'jwt-decode';
-import bcrypt from 'bcryptjs';
 import { toast } from 'react-hot-toast';
-import type { User } from '../types';
+import type { User, UserRole } from '../types';
 import { useLocalStorage } from '../hooks/useLocalStorage';
+import { 
+  hashPassword, 
+  comparePassword, 
+  generateToken, 
+  setAuthCookie,
+  removeAuthCookie,
+  generateSecureId,
+  sanitizeUser
+} from '../utils/security';
+import { validateData, loginSchema, registerSchema, updatePasswordSchema } from '../utils/validation';
+import { ZodError } from 'zod';
 
 interface AuthContextData {
   currentUser: User | null;
@@ -16,6 +25,13 @@ interface AuthContextData {
 
 export const AuthContext = createContext<AuthContextData>({} as AuthContextData);
 
+// Função auxiliar para extrair mensagens de erro do ZodError
+const getErrorMessage = (error: ZodError): string => {
+  const formattedErrors = error.format();
+  // Extrair a primeira mensagem de erro disponível
+  return error.errors[0]?.message || 'Dados inválidos';
+};
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [currentUser, setCurrentUser] = useLocalStorage<User | null>('currentUser', null);
   const [users, setUsers] = useLocalStorage<User[]>('users', []);
@@ -26,11 +42,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const createDefaultAdmin = async () => {
       if (users.length === 0) {
         const defaultAdmin: User = {
-          id: crypto.randomUUID(),
+          id: generateSecureId(),
           name: 'Administrador',
           email: 'admin@assistentefinanceiro.com',
-          password: await bcrypt.hash('Admin@123', 10),
-          role: 'admin',
+          password: await hashPassword('Admin@123'),
+          role: 'admin' as UserRole,
           isActive: true,
           createdAt: new Date().toISOString()
         };
@@ -43,12 +59,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (email: string, password: string) => {
     try {
+      // Validação dos dados de login
+      const validation = validateData(loginSchema, { email, password });
+      if (!validation.success) {
+        throw new Error(getErrorMessage(validation.errors));
+      }
+
       const user = users.find(u => u.email === email);
       if (!user || !user.password) {
         throw new Error('Email ou senha inválidos');
       }
 
-      const isValidPassword = await bcrypt.compare(password, user.password);
+      const isValidPassword = await comparePassword(password, user.password);
       if (!isValidPassword) {
         throw new Error('Email ou senha inválidos');
       }
@@ -63,13 +85,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       };
       setUsers(prev => prev.map(u => u.id === user.id ? updatedUser : u));
       
-      // Não enviar a senha para o estado do usuário atual
-      const userWithoutPassword = { ...updatedUser };
-      delete userWithoutPassword.password;
-      setCurrentUser(userWithoutPassword);
+      // Sanitizar o usuário antes de armazenar no estado
+      const safeUser = sanitizeUser(updatedUser);
+      setCurrentUser(safeUser);
 
-      const token = generateToken(userWithoutPassword);
-      localStorage.setItem('token', token);
+      // Usar implementação segura de token
+      const token = await generateToken(safeUser);
+      setAuthCookie(token);
 
       toast.success('Login realizado com sucesso!');
       navigate('/');
@@ -81,31 +103,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const register = async (name: string, email: string, password: string) => {
     try {
+      // Validação dos dados de registro
+      const validation = validateData(registerSchema, { name, email, password, confirmPassword: password });
+      if (!validation.success) {
+        throw new Error(getErrorMessage(validation.errors));
+      }
+
       if (users.some(u => u.email === email)) {
         throw new Error('Email já cadastrado');
       }
 
-      const hashedPassword = await bcrypt.hash(password, 10);
+      const hashedPassword = await hashPassword(password);
 
       const newUser: User = {
-        id: crypto.randomUUID(),
+        id: generateSecureId(),
         name,
         email,
         password: hashedPassword,
-        role: 'client',
+        role: 'user' as UserRole,
         isActive: true,
         createdAt: new Date().toISOString()
       };
 
       setUsers(prev => [...prev, newUser]);
 
-      // Não enviar a senha para o estado do usuário atual
-      const userWithoutPassword = { ...newUser };
-      delete userWithoutPassword.password;
-      setCurrentUser(userWithoutPassword);
+      // Sanitizar o usuário antes de armazenar no estado
+      const safeUser = sanitizeUser(newUser);
+      setCurrentUser(safeUser);
 
-      const token = generateToken(userWithoutPassword);
-      localStorage.setItem('token', token);
+      // Usar implementação segura de token
+      const token = await generateToken(safeUser);
+      setAuthCookie(token);
 
       toast.success('Cadastro realizado com sucesso!');
       navigate('/');
@@ -116,7 +144,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const logout = () => {
-    localStorage.removeItem('token');
+    removeAuthCookie();
     setCurrentUser(null);
     navigate('/login');
     toast.success('Logout realizado com sucesso!');
@@ -124,6 +152,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const updatePassword = async (currentPassword: string, newPassword: string) => {
     try {
+      // Validação dos dados de atualização de senha
+      const validation = validateData(updatePasswordSchema, { 
+        currentPassword, 
+        password: newPassword, 
+        confirmPassword: newPassword 
+      });
+      
+      if (!validation.success) {
+        throw new Error(getErrorMessage(validation.errors));
+      }
+
       if (!currentUser) {
         throw new Error('Usuário não autenticado');
       }
@@ -133,12 +172,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         throw new Error('Usuário não encontrado');
       }
 
-      const isValidPassword = await bcrypt.compare(currentPassword, user.password);
+      const isValidPassword = await comparePassword(currentPassword, user.password);
       if (!isValidPassword) {
         throw new Error('Senha atual incorreta');
       }
 
-      const hashedPassword = await bcrypt.hash(newPassword, 10);
+      const hashedPassword = await hashPassword(newPassword);
       const updatedUser = {
         ...user,
         password: hashedPassword
@@ -146,23 +185,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       setUsers(prev => prev.map(u => u.id === currentUser.id ? updatedUser : u));
       
-      // Não enviar a senha para o estado do usuário atual
-      const userWithoutPassword = { ...updatedUser };
-      delete userWithoutPassword.password;
-      setCurrentUser(userWithoutPassword);
+      // Sanitizar o usuário antes de armazenar no estado
+      const safeUser = sanitizeUser(updatedUser);
+      setCurrentUser(safeUser);
 
       toast.success('Senha atualizada com sucesso!');
     } catch (error) {
       console.error('Update password error:', error);
       throw error;
     }
-  };
-
-  const generateToken = (user: User): string => {
-    return btoa(JSON.stringify({
-      ...user,
-      exp: Date.now() + 24 * 60 * 60 * 1000
-    }));
   };
 
   return (
